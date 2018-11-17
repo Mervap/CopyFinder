@@ -74,7 +74,6 @@ void HashCounter::preCountHash(QDir const &directory) {
             } else {
                 QFile f(it.filePath());
                 if (f.open(QFile::ReadOnly)) {
-
                     qint64 result = f.size();
                     if (preHashes.find(result) == preHashes.end()) {
                         preHashes.insert(result, QVector<QString>(1, f.fileName()));

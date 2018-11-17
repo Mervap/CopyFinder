@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(progressBarTimer, SIGNAL(timeout()), this, SLOT(updateProgressBarColor()));
 
     progressBarStileSheet = progressBarStileSheetGreen;
+    ui->progressBar->setStyleSheet(progressBarStileSheet.arg(mRunner));
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
     connect(ui->selectDirectory, SIGNAL(released()), this, SLOT(selectDirectory()));
