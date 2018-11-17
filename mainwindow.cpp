@@ -209,7 +209,7 @@ void MainWindow::showResult() {
         }
 
         ui->progressBar->setValue(ui->progressBar->value() + 1);
-
+        progressBarTimer->stop();
         DeleteDialog result(nullptr, &hashes, &orderedKeys, &currentDir);
         result.exec();
     }
