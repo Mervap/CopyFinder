@@ -20,6 +20,7 @@ class DeleteDialog : public QDialog {
 public:
     explicit DeleteDialog(QWidget *parent = nullptr,
                           QMap<QByteArray, QVector<QString>> *copies = nullptr,
+                          std::vector<QByteArray> * ordegedKeys = nullptr,
                           QDir *origin = nullptr);
 
     ~DeleteDialog();

@@ -25,6 +25,7 @@ const QString progressBarStileSheetGreen = QString("QProgressBar {"
 
 DeleteDialog::DeleteDialog(QWidget *parent,
                            QMap<QByteArray, QVector<QString>> *copies,
+                           std::vector<QByteArray> *orderedKeys,
                            QDir *root)
         : QDialog(parent), ui(new Ui::DeleteDialog), root(root) {
 
@@ -37,24 +38,17 @@ DeleteDialog::DeleteDialog(QWidget *parent,
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->treeWidget->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 
-    QVector<std::pair<qint64, QByteArray>> keys;
-    for (auto group : copies->keys()) {
-        qint64 size = QFile(copies->value(group)[0]).size();
-        keys.append({size * copies->value(group).size(), group});
-    }
-
-    std::sort(keys.begin(), keys.end(), std::greater<std::pair<qint64, QByteArray>>());
-
-    for (auto group : keys) {
-        if (copies->value(group.second).size() == 1) continue;
+    for (auto group : *orderedKeys) {
+        auto values = copies->value(group);
+        if (values.size() == 1) continue;
         QTreeWidgetItem * item = new QTreeWidgetItem(ui->treeWidget);
         item->setCheckState(0, Qt::CheckState::Unchecked);
 
-        item->setText(0, QString(root->relativeFilePath(copies->value(group.second)[0])));
-        item->setText(1, QString::number(copies->value(group.second).size()));
+        item->setText(0, QString(root->relativeFilePath(values[0])));
+        item->setText(1, QString::number(values.size()));
         qint64 size = 0;
-        for (auto file : copies->value(group.second)) {
-            QTreeWidgetItem * subItem = new QTreeWidgetItem(item);
+        for (auto file : values) {
+            QTreeWidgetItem *subItem = new QTreeWidgetItem(item);
             subItem->setCheckState(0, Qt::CheckState::Unchecked);
             subItem->setText(0, root->relativeFilePath(file));
             item->addChild(subItem);
@@ -74,7 +68,7 @@ DeleteDialog::DeleteDialog(QWidget *parent,
     }
 
     ui->progressBar->setStyleSheet(progressBarStileSheetGreen);
-    connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem * , int)), this, SLOT(clickCheck(QTreeWidgetItem * )));
+    connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(clickCheck(QTreeWidgetItem *)));
     connect(ui->deleteButton, SIGNAL(released()), this, SLOT(deleteFiles()));
     connect(ui->cancelButton, SIGNAL(released()), this, SLOT(cancel()));
 }

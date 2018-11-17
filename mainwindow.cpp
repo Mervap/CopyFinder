@@ -48,11 +48,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     progressBarTimer = new QTimer(this);
     connect(progressBarTimer, SIGNAL(timeout()), this, SLOT(updateProgressBarColor()));
-    progressBarTimer->start(20);
 
     progressBarStileSheet = progressBarStileSheetGreen;
 
-    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
     connect(ui->selectDirectory, SIGNAL(released()), this, SLOT(selectDirectory()));
     connect(ui->findCopies, SIGNAL(released()), this, SLOT(startScanning()));
     connect(ui->cancelButton, SIGNAL(released()), this, SLOT(stopScanningOrHashing()));
@@ -94,28 +93,27 @@ void MainWindow::startScanning() {
 
     ui->progress->clear();
     mRunner = 0.1;
-    progressBarTimer->start(20);
+    progressBarTimer->start(40);
     progressBarStileSheet = progressBarStileSheetGreen;
 
     QString dir = ui->directoryPath->text();
     if (dir == "") {
-        ui->progress->insertHtml("<div style=\"color: red;\"><b>WARNING:</b> Please, input a directory</div>");
+        ui->progress->append("<div style=\"color: red;\"><b>WARNING:</b> Please, input a directory</div>");
         return;
     }
 
     currentDir = QDir(dir);
     if (!currentDir.exists()) {
-        ui->progress->insertHtml("<div style=\"color: red;\"><b>WARNING:</b> No such directory</div>");
+        ui->progress->append("<div style=\"color: red;\"><b>WARNING:</b> No such directory</div>");
     } else {
         ui->findCopies->setEnabled(false);
         ui->progressBar->setValue(0);
-        ui->progress->insertHtml(QString("Starting process for %1").arg(currentDir.path()));
+        ui->progress->append(QString("Starting process for %1").arg(currentDir.path()));
         ui->progress->append("Counting files...");
         ui->progressBar->setMaximum(static_cast<int>(currentDir.count()));
 
         summarySize = 0;
         amount = 0;
-
         thread = new QThread;
         Counter *counter = new Counter(&summarySize, &amount, currentDir);
 
@@ -129,12 +127,13 @@ void MainWindow::startScanning() {
 }
 
 void MainWindow::startHashing() {
+    progressBarTimer->stop();
     thread->wait();
 
     delete thread;
     thread = nullptr;
 
-    progressBarTimer->start(20);
+    progressBarTimer->start(40);
     progressBarStileSheet = progressBarStileSheetGreen;
 
     summarySize /= 1024 * 1024 * 1024;
@@ -174,10 +173,12 @@ void MainWindow::startHashing() {
 }
 
 void MainWindow::showResult() {
+    progressBarTimer->stop();
     thread->wait();
 
     delete thread;
     thread = nullptr;
+
     ui->progress->append("Process finished");
 
     bool flag = false;
@@ -191,7 +192,23 @@ void MainWindow::showResult() {
     if (!flag) {
         ui->progress->append("No duplicates found");
     } else {
-        DeleteDialog result(nullptr, &hashes, &currentDir);
+        ui->progressBar->setMaximum(ui->progressBar->maximum() + 1);
+        std::vector<std::pair<int64_t, QByteArray>> keys;
+        for (auto group : hashes.keys()) {
+            auto values = hashes.value(group);
+            int64_t size = QFile(values[0]).size();
+            keys.push_back({size * values.size(), group});
+        }
+        std::sort(keys.begin(), keys.end(), std::greater<std::pair<int64_t, QByteArray>>());
+
+        std::vector<QByteArray> orderedKeys(keys.size());
+        for (size_t i = 0; i < keys.size(); ++i) {
+            orderedKeys[i] = keys[i].second;
+        }
+
+        ui->progressBar->setValue(ui->progressBar->value() + 1);
+
+        DeleteDialog result(nullptr, &hashes, &orderedKeys, &currentDir);
         result.exec();
     }
 
@@ -223,7 +240,7 @@ void MainWindow::stopScanningOrHashing() {
 
         delete thread;
         thread = nullptr;
-        ui->progress->insertHtml("<br/><div style=\"color: red;\"><b>WARNING:</b> Work was canceled by user</div>");
+        ui->progress->append("<br/><div style=\"color: red;\"><b>WARNING:</b> Work was canceled by user</div>");
         ui->findCopies->setEnabled(true);
     }
 }
