@@ -20,7 +20,7 @@ const QString progressBarStileSheetGreen = QString("QProgressBar {"
                                                    "}"
                                                    ""
                                                    "QProgressBar::chunk {"
-                                                   "   background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #32CD32, stop:%1 #98FB98, stop:1 #32CD32);}"
+                                                   "   background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #32CD32, stop:0.5 #98FB98, stop:1 #32CD32);}"
 );;
 
 DeleteDialog::DeleteDialog(QWidget *parent,

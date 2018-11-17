@@ -209,7 +209,7 @@ void MainWindow::showResult() {
         }
 
         ui->progressBar->setValue(ui->progressBar->value() + 1);
-        progressBarTimer->stop();
+
         DeleteDialog result(nullptr, &hashes, &orderedKeys, &currentDir);
         result.exec();
     }
@@ -250,6 +250,11 @@ void MainWindow::stopScanningOrHashing() {
 }
 
 void MainWindow::updateProgressBarColor() {
+
+    if (!progressBarTimer->isActive()) {
+        return;
+    }
+
     ui->progressBar->setStyleSheet(progressBarStileSheet.arg(mRunner));
 
     mRunner += 0.01;
