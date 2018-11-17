@@ -11,6 +11,7 @@
 #include <QPalette>
 #include <QColor>
 #include <QTimer>
+#include <algorithm>
 
 const QString progressBarStileSheetGreen = QString("QProgressBar {"
                                                    "   border: 1px solid black;"
@@ -30,22 +31,47 @@ DeleteDialog::DeleteDialog(QWidget *parent,
     ui->setupUi(this);
 
     ui->treeWidget->clear();
+    ui->treeWidget->setUniformRowHeights(true);
+
+    ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->treeWidget->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+
+    QVector<std::pair<qint64, QByteArray>> keys;
     for (auto group : copies->keys()) {
-        if (copies->value(group).size() == 1) continue;
+        qint64 size = QFile(copies->value(group)[0]).size();
+        keys.append({size * copies->value(group).size(), group});
+    }
+
+    std::sort(keys.begin(), keys.end(), std::greater<std::pair<qint64, QByteArray>>());
+
+    for (auto group : keys) {
+        if (copies->value(group.second).size() == 1) continue;
         QTreeWidgetItem * item = new QTreeWidgetItem(ui->treeWidget);
         item->setCheckState(0, Qt::CheckState::Unchecked);
 
-        item->setText(0, QString(root->relativeFilePath(copies->value(group)[0])));
-        item->setText(1, QString::number(copies->value(group).size()));
-        for (auto file : copies->value(group)) {
+        item->setText(0, QString(root->relativeFilePath(copies->value(group.second)[0])));
+        item->setText(1, QString::number(copies->value(group.second).size()));
+        qint64 size = 0;
+        for (auto file : copies->value(group.second)) {
             QTreeWidgetItem * subItem = new QTreeWidgetItem(item);
             subItem->setCheckState(0, Qt::CheckState::Unchecked);
             subItem->setText(0, root->relativeFilePath(file));
             item->addChild(subItem);
+            size += QFile(file).size();
+        }
+
+        if (size / 1024 < 1) {
+            item->setText(2, QString::number(size) + " B");
+        } else if (size / 1024 / 1024 < 1) {
+            item->setText(2, QString::number(size / 1024) + " KB");
+        } else if (size / 1024 / 1024 / 1024 < 1) {
+            item->setText(2, QString::number(size / 1024 / 1024) + " MB");
+        } else {
+            item->setText(2, QString::number(size / 1024 / 1024 / 1024) + " GB");
         }
         ui->treeWidget->addTopLevelItem(item);
     }
-    ui->treeWidget->sortItems(1, Qt::DescendingOrder);
 
     ui->progressBar->setStyleSheet(progressBarStileSheetGreen);
     connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem * , int)), this, SLOT(clickCheck(QTreeWidgetItem * )));

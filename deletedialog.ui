@@ -25,7 +25,7 @@
      <x>10</x>
      <y>10</y>
      <width>881</width>
-     <height>581</height>
+     <height>481</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -35,10 +35,30 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Check files, that you want to delete</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="0">
      <widget class="QTreeWidget" name="treeWidget">
       <property name="columnCount">
-       <number>2</number>
+       <number>3</number>
       </property>
       <attribute name="headerDefaultSectionSize">
        <number>550</number>
@@ -56,24 +76,21 @@
         <string notr="true">Amount</string>
        </property>
       </column>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Check files, that you want to delete</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="value">
-       <number>0</number>
-      </property>
+      <column>
+       <property name="text">
+        <string>Summary Size</string>
+       </property>
+      </column>
      </widget>
     </item>
     <item row="4" column="0">
-     <widget class="QWidget" name="" native="true">
+     <widget class="QWidget" name="horisontalWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="deleteButton">

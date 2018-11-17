@@ -87,6 +87,11 @@ void countFiles(qint64 &size, int &amount, QDir const &dir) {
 }
 
 void MainWindow::startScanning() {
+
+    if (thread != nullptr) {
+        return;
+    }
+
     ui->progress->clear();
     mRunner = 0.1;
     progressBarTimer->start(20);
@@ -102,11 +107,10 @@ void MainWindow::startScanning() {
     if (!currentDir.exists()) {
         ui->progress->insertHtml("<div style=\"color: red;\"><b>WARNING:</b> No such directory</div>");
     } else {
+        ui->findCopies->setEnabled(false);
         ui->progressBar->setValue(0);
         ui->progress->insertHtml(QString("Starting process for %1").arg(currentDir.path()));
         ui->progress->append("Counting files...");
-
-        ui->progressBar->setStyleSheet(progressBarStileSheetGreen);
         ui->progressBar->setMaximum(static_cast<int>(currentDir.count()));
 
         summarySize = 0;
@@ -130,6 +134,9 @@ void MainWindow::startHashing() {
     delete thread;
     thread = nullptr;
 
+    progressBarTimer->start(20);
+    progressBarStileSheet = progressBarStileSheetGreen;
+
     summarySize /= 1024 * 1024 * 1024;
 
     if (summarySize > 0) {
@@ -148,7 +155,6 @@ void MainWindow::startHashing() {
 
     ui->progress->append("Hashing files...");
 
-    ui->progressBar->setStyleSheet(progressBarStileSheetGreen);
     ui->progressBar->setMaximum(amount);
     ui->progressBar->setValue(0);
 
@@ -188,14 +194,20 @@ void MainWindow::showResult() {
         DeleteDialog result(nullptr, &hashes, &currentDir);
         result.exec();
     }
+
+    ui->findCopies->setEnabled(true);
 }
 
 void MainWindow::updateProgressBar() {
-    ui->progressBar->setValue(ui->progressBar->value() + 1);
+    if (thread != nullptr) {
+        ui->progressBar->setValue(ui->progressBar->value() + 1);
+    }
 }
 
 void MainWindow::updateProgress(QString str) {
-    ui->progress->append(str);
+    if (thread != nullptr) {
+        ui->progress->append(str);
+    }
 }
 
 void MainWindow::showAboutDialog() {
@@ -204,22 +216,20 @@ void MainWindow::showAboutDialog() {
 
 void MainWindow::stopScanningOrHashing() {
     if (thread != nullptr && thread->isRunning()) {
+        ui->progressBar->setStyleSheet(progressBarStileSheetRed.arg(mRunner));
+        progressBarTimer->stop();
         thread->requestInterruption();
-        ui->progress->insertHtml("<br/><div style=\"color: red;\"><b>WARNING:</b> Work was canceled by user</div>");
-        progressBarStileSheet = progressBarStileSheetRed;
         thread->wait();
 
         delete thread;
         thread = nullptr;
+        ui->progress->insertHtml("<br/><div style=\"color: red;\"><b>WARNING:</b> Work was canceled by user</div>");
+        ui->findCopies->setEnabled(true);
     }
 }
 
 void MainWindow::updateProgressBarColor() {
     ui->progressBar->setStyleSheet(progressBarStileSheet.arg(mRunner));
-
-    if (ui->progressBar->value() == ui->progressBar->maximum() || progressBarStileSheet == progressBarStileSheetRed) {
-        progressBarTimer->stop();
-    }
 
     mRunner += 0.01;
     if (mRunner > 1) {

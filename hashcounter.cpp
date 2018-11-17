@@ -10,13 +10,14 @@ HashCounter::HashCounter(QDir directory, QMap<QByteArray, QVector<QString>> &has
 
 
 void HashCounter::countHash() {
-    for (auto group : preHashes) {
 
+    for (auto group : preHashes) {
         if (QThread::currentThread()->isInterruptionRequested()) {
             return;
         }
 
         if (group.size() < 2) {
+            emit updateProgressBar();
             continue;
         }
 
@@ -37,6 +38,7 @@ void HashCounter::countHash() {
                                         HashCounter::directory.relativeFilePath((*hashes)[result][0]) + "\n");
                 }
             }
+            emit updateProgressBar();
         }
     }
 }
@@ -68,6 +70,7 @@ void HashCounter::preCountHash(QDir const &directory) {
                                         " may be a copy of " +
                                         HashCounter::directory.relativeFilePath((*hashes)[result][0]) + "\n");
                 }
+                emit updateProgressBar();
             } else {
                 QFile f(it.filePath());
                 if (f.open(QFile::ReadOnly)) {
@@ -80,14 +83,16 @@ void HashCounter::preCountHash(QDir const &directory) {
                     }
                 }
             }
-            emit updateProgressBar();
         }
     }
 }
 
 void HashCounter::doWork() {
     preCountHash(directory);
-    countHash();
+    if (!QThread::currentThread()->isInterruptionRequested()) {
+        countHash();
+    }
+
     if (!QThread::currentThread()->isInterruptionRequested()) {
         emit workDone();
     }
