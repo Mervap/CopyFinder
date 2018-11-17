@@ -1,6 +1,7 @@
 #include "deletedialog.h"
 #include "ui_deletedialog.h"
 
+#include <QDir>
 #include <QDebug>
 #include <QString>
 #include <QStyle>
@@ -52,7 +53,10 @@ DeleteDialog::DeleteDialog(QWidget *parent,
             subItem->setCheckState(0, Qt::CheckState::Unchecked);
             subItem->setText(0, root->relativeFilePath(file));
             item->addChild(subItem);
-            size += QFile(file).size();
+
+            if (QFile(file).symLinkTarget() == "") {
+                size += QFile(file).size();
+            }
         }
 
         if (size / 1024 < 1) {

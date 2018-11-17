@@ -200,7 +200,10 @@ void MainWindow::showResult() {
         std::vector<std::pair<int64_t, QByteArray>> keys;
         for (auto group : hashes.keys()) {
             auto values = hashes.value(group);
-            int64_t size = QFile(values[0]).size();
+            int64_t size = 0;
+            if (QFile(values[0]).symLinkTarget() == "") {
+               size = QFile(values[0]).size();
+            }
             keys.push_back({size * values.size(), group});
         }
         std::sort(keys.begin(), keys.end(), std::greater<std::pair<int64_t, QByteArray>>());
