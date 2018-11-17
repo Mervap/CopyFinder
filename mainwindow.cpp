@@ -67,9 +67,11 @@ void MainWindow::selectDirectory() {
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui->directoryPath->clear();
-    ui->directoryPath->insert(dir);
-    ui->progressBar->setValue(0);
+    if (dir != "") {
+        ui->directoryPath->clear();
+        ui->directoryPath->insert(dir);
+        ui->progressBar->setValue(0);
+    }
 }
 
 void countFiles(qint64 &size, int &amount, QDir const &dir) {
