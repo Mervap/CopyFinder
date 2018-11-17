@@ -27,7 +27,7 @@ DeleteDialog::DeleteDialog(QWidget *parent,
                            QMap<QByteArray, QVector<QString>> *copies,
                            std::vector<QByteArray> *orderedKeys,
                            QDir *root)
-        : QDialog(parent), ui(new Ui::DeleteDialog), root(root) {
+        : QDialog(parent), ui(new Ui::DeleteDialog), root(*root) {
 
     ui->setupUi(this);
 
@@ -117,7 +117,7 @@ void DeleteDialog::deleteFiles() {
     ui->progressBar->setValue(0);
 
     for (auto i : files) {
-        QFile(root->absoluteFilePath(i)).remove();
+        QFile(root.absoluteFilePath(i)).remove();
         ui->progressBar->setValue(ui->progressBar->value() + 1);
     }
 

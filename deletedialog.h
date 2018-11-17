@@ -35,7 +35,7 @@ private:
     QTreeWidgetItem *createTreeWidgetItem();
 
     std::unique_ptr <Ui::DeleteDialog> ui;
-    std::unique_ptr <QDir> const root;
+    QDir root;
 };
 
 #endif  // DELTEDIALOG_H
