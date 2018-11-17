@@ -8,7 +8,40 @@
 HashCounter::HashCounter(QDir directory, QMap<QByteArray, QVector<QString>> &hashes) : hashes(&hashes),
                                                                                         directory(directory) {}
 
-void HashCounter::countHash(QDir const &directory) {
+
+void HashCounter::countHash() {
+    for (auto group : preHashes) {
+
+        if (QThread::currentThread()->isInterruptionRequested()) {
+            return;
+        }
+
+        if (group.size() < 2) {
+            continue;
+        }
+
+        for(auto item : group) {
+            QByteArray result;
+            QCryptographicHash hash(QCryptographicHash::Sha256);
+            QFile f(item);
+            if (f.open(QFile::ReadOnly)) {
+                hash.addData(&f);
+
+                QByteArray result = hash.result();
+                if (hashes->find(result) == hashes->end()) {
+                    hashes->insert(result, QVector<QString>(1, item));
+                } else {
+                    (*hashes)[result].push_back(item);
+                    emit updateProgress(HashCounter::directory.relativeFilePath(item) +
+                                        " may be a copy of " +
+                                        HashCounter::directory.relativeFilePath((*hashes)[result][0]) + "\n");
+                }
+            }
+        }
+    }
+}
+
+void HashCounter::preCountHash(QDir const &directory) {
     QDirIterator it(directory);
     while (it.hasNext()) {
         if (QThread::currentThread()->isInterruptionRequested()) {
@@ -18,7 +51,7 @@ void HashCounter::countHash(QDir const &directory) {
         it.next();
         if (!it.fileInfo().isSymLink() && it.fileInfo().isDir()) {
             if (it.fileName() != "." && it.fileName() != "..") {
-                countHash(QDir(it.filePath()));
+                preCountHash(QDir(it.filePath()));
             }
         } else {
             QByteArray result;
@@ -38,16 +71,12 @@ void HashCounter::countHash(QDir const &directory) {
             } else {
                 QFile f(it.filePath());
                 if (f.open(QFile::ReadOnly)) {
-                    hash.addData(&f);
 
-                    QByteArray result = hash.result();
-                    if (hashes->find(result) == hashes->end()) {
-                        hashes->insert(result, QVector<QString>(1, f.fileName()));
+                    qint64 result = f.size();
+                    if (preHashes.find(result) == preHashes.end()) {
+                        preHashes.insert(result, QVector<QString>(1, f.fileName()));
                     } else {
-                        (*hashes)[result].push_back(f.fileName());
-                        emit updateProgress(HashCounter::directory.relativeFilePath(f.fileName()) +
-                                            " may be a copy of " +
-                                            HashCounter::directory.relativeFilePath((*hashes)[result][0]) + "\n");
+                        preHashes[result].push_back(f.fileName());
                     }
                 }
             }
@@ -57,7 +86,8 @@ void HashCounter::countHash(QDir const &directory) {
 }
 
 void HashCounter::doWork() {
-    countHash(directory);
+    preCountHash(directory);
+    countHash();
     if (!QThread::currentThread()->isInterruptionRequested()) {
         emit workDone();
     }

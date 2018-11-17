@@ -3,6 +3,14 @@
 
 #include <QDebug>
 #include <QString>
+#include <QStyle>
+#include <QCommonStyle>
+#include <QDesktopWidget>
+#include <QThread>
+#include <QDebug>
+#include <QPalette>
+#include <QColor>
+#include <QTimer>
 
 const QString progressBarStileSheetGreen = QString("QProgressBar {"
                                                    "   border: 1px solid black;"
@@ -18,7 +26,9 @@ DeleteDialog::DeleteDialog(QWidget *parent,
                            QMap<QByteArray, QVector<QString>> *copies,
                            QDir *root)
         : QDialog(parent), ui(new Ui::DeleteDialog), root(root) {
+
     ui->setupUi(this);
+
     ui->treeWidget->clear();
     for (auto group : copies->keys()) {
         if (copies->value(group).size() == 1) continue;

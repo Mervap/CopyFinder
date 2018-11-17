@@ -22,9 +22,11 @@ public
         void updateProgress(QString str);
 
 private:
-    void countHash(QDir const &dir);
+    void preCountHash(QDir const &dir);
+    void countHash();
 
     std::unique_ptr<QMap<QByteArray, QVector<QString>>> hashes;
+    QMap<qint64, QVector<QString>> preHashes;
     QDir directory;
 };
 
