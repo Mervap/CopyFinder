@@ -28,7 +28,6 @@ public:
 private
     slots:
         void clickCheck(QTreeWidgetItem *item);
-        void clickCheck(QTreeWidgetItem *item, Qt::CheckState state, bool p);
         void deleteFiles();
         void cancel();
 

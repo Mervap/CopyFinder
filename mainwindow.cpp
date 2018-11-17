@@ -1,6 +1,7 @@
 #include "hashcounter.h"
 #include "counter.h"
 #include "mainwindow.h"
+#include "testdialog.h"
 #include "deletedialog.h"
 #include "ui_mainwindow.h"
 #include <QCommonStyle>
@@ -228,7 +229,9 @@ void MainWindow::updateProgress(QString str) {
 }
 
 void MainWindow::showAboutDialog() {
-    QMessageBox::aboutQt(this);
+    //QMessageBox::aboutQt(this);
+    TestDialog result(nullptr);
+    result.exec();
 }
 
 void MainWindow::stopScanningOrHashing() {

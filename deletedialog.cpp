@@ -68,7 +68,7 @@ DeleteDialog::DeleteDialog(QWidget *parent,
     }
 
     ui->progressBar->setStyleSheet(progressBarStileSheetGreen);
-    connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(clickCheck(QTreeWidgetItem *)));
+    connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(clickCheck(QTreeWidgetItem *)));
     connect(ui->deleteButton, SIGNAL(released()), this, SLOT(deleteFiles()));
     connect(ui->cancelButton, SIGNAL(released()), this, SLOT(cancel()));
 }
@@ -77,53 +77,18 @@ DeleteDialog::~DeleteDialog() {}
 
 void DeleteDialog::clickCheck(QTreeWidgetItem *item) {
 
-    if (item->checkState(0) == Qt::Unchecked) {
-        item->setCheckState(0, Qt::Checked);
-        for (int i = 0; i < item->childCount(); ++i) {
-            clickCheck(item->child(i), Qt::Checked, false);
-        }
-
-        if (item->parent() != nullptr) {
-            clickCheck(item->parent(), Qt::Checked, true);
-        }
-    } else {
-        item->setCheckState(0, Qt::Unchecked);
-        for (int i = 0; i < item->childCount(); ++i) {
-            clickCheck(item->child(i), Qt::Unchecked, false);
-        }
-
-        if (item->parent() != nullptr) {
-            clickCheck(item->parent(), Qt::Unchecked, true);
-        }
-    }
-}
-
-void DeleteDialog::clickCheck(QTreeWidgetItem *item, Qt::CheckState state, bool p) {
-
-    if (p) {
-        int cntChecked = 0;
-        int cntPartiallyChecked = 0;
-        for (int i = 0; i < item->childCount(); ++i) {
-            if (item->child(i)->checkState(0) == Qt::Checked) {
-                ++cntChecked;
-            } else if (item->child(i)->checkState(0) == Qt::PartiallyChecked) {
-                ++cntPartiallyChecked;
+    if (item->parent() == nullptr) {
+        if (item->checkState(0) == Qt::Unchecked) {
+            for (int i = 0; i < item->childCount(); ++i) {
+                item->child(i)->setCheckState(0, Qt::Unchecked);
+            }
+        } else if (item->checkState(0) == Qt::Checked){
+            for (int i = 0; i < item->childCount(); ++i) {
+               item->child(i)->setCheckState(0, Qt::Checked);
             }
         }
-
-        if (cntChecked == item->childCount()) {
-            item->setCheckState(0, Qt::Checked);
-        } else if (cntChecked + cntPartiallyChecked > 0) {
-            item->setCheckState(0, Qt::PartiallyChecked);
-        } else {
-            item->setCheckState(0, Qt::Unchecked);
-        }
-
-    } else {
-        item->setCheckState(0, state);
     }
 }
-
 
 void DeleteDialog::deleteFiles() {
 

@@ -118,7 +118,7 @@
   </widget>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>Test dialog layout</string>
    </property>
   </action>
  </widget>

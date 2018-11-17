@@ -27,18 +27,21 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         hashcounter.cpp \
-    deletedialog.cpp \
-    counter.cpp
+        deletedialog.cpp \
+        counter.cpp \
+        testdialog.cpp
 
 HEADERS += \
         mainwindow.h \
         hashcounter.h \
-    deletedialog.h \
-    counter.h
+        deletedialog.h \
+        counter.h \
+        testdialog.h
 
 FORMS += \
         mainwindow.ui \
-    deletedialog.ui
+        deletedialog.ui \
+        testdialog.ui
 
 RC_FILE += QtTest.rc
 OTHER_FILES += \
