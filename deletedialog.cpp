@@ -35,7 +35,7 @@ DeleteDialog::DeleteDialog(QWidget *parent,
     ui->treeWidget->clear();
     ui->treeWidget->setUniformRowHeights(true);
 
-    ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->treeWidget->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 
